@@ -38,8 +38,8 @@ let buildGraph = (edges) => {
 };
 
 const roadGraph = buildGraph(roads);
-let roadGraphString = JSON.stringify(roadGraph); //this is just a stringified version of the graph for error checking.
-console.log(roadGraphString);
+// let roadGraphString = JSON.stringify(roadGraph); //this is just a stringified version of the graph for error checking.
+// console.log(roadGraphString);
 
 class VillageState {
   constructor(place, parcels) {
@@ -61,3 +61,41 @@ class VillageState {
     }
   }
 }
+
+let runRobot = (state, robot, memory) => {
+  for (let turn = 0; ; turn++) {
+    if (state.parcels.length == 0) {
+      console.log(`Done in ${turn} turns`);
+      break;
+    }
+    let action = robot(state, memory);
+    state = state.move(action.direction);
+    memory = action.memory;
+    console.log(`Moved to ${action.direction}`);
+  }
+};
+
+let randomPick = (array) => {
+  let choice = Math.floor(Math.random() * array.length);
+  return array[choice];
+};
+
+let randomRobot = (state) => {
+  return { direction: randomPick(roadGraph[state.place]) };
+};
+
+VillageState.random = (parcelCount = 5) => {
+  let parcels = [];
+
+  for (let i = 0; i < parcelCount; i++) {
+    let address = randomPick(Object.keys(roadGraph));
+    let place;
+    do {
+      place = randomPick(Object.keys(roadGraph));
+    } while (place == address);
+    parcels.push({ place, address });
+  }
+  return new VillageState("Post Office", parcels);
+};
+
+runRobot(VillageState.random(), randomRobot);
